@@ -1,4 +1,3 @@
-// backend/server.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -6,14 +5,34 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes.js';
 import cardRoutes from './routes/cardRoutes.js';
 import pokemonRoutes from './routes/pokemonRoutes.js';
-import { loadCardNames } from './cache.js'; // 👈 Se importa la nueva función
+import { loadCardNames } from './cache.js';
 
 dotenv.config();
 
 const app = express();
 
+// --- CONFIGURACIÓN DE CORS ESPECÍFICA ---
+// Lista de dominios que tienen permiso para hacer peticiones a tu API
+const whitelist = [
+    'http://localhost:3000', // Para tu desarrollo local
+    'https://ppp-team-rocket-m4tzst3p0-martin-peraltas-projects.vercel.app/' // 👈 REEMPLAZA ESTO CON LA URL DE TU FRONTEND EN VERCEL
+];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Permite peticiones sin origen (como las de Postman o apps móviles) y las de la whitelist
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+};
+
+// Se aplican las nuevas opciones de CORS
+app.use(cors(corsOptions)); 
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 // Rutas
@@ -30,7 +49,6 @@ app.get('/', (req, res) => {
 // Conexión a MongoDB Atlas
 const connectDB = async () => {
   try {
-    // Las opciones 'useNewUrlParser' y 'useUnifiedTopology' ya no son necesarias.
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Conectado a MongoDB Atlas');
   } catch (error) {
@@ -41,10 +59,9 @@ const connectDB = async () => {
 
 // Función para iniciar el servidor de forma ordenada
 const startServer = async () => {
-  await connectDB();     // 1. Primero conecta a la base de datos.
-  await loadCardNames();   // 2. Luego carga el caché de nombres.
+  await connectDB();
+  await loadCardNames();
 
-  // 3. Finalmente, levanta el servidor.
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
