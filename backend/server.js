@@ -12,15 +12,13 @@ dotenv.config();
 const app = express();
 
 // --- CONFIGURACIÓN DE CORS ESPECÍFICA ---
-// Lista de dominios que tienen permiso para hacer peticiones a tu API
 const whitelist = [
-    'http://localhost:3000', // Para tu desarrollo local
-    'https://ppp-team-rocket-m4tzst3p0-martin-peraltas-projects.vercel.app/' // 👈 REEMPLAZA ESTO CON LA URL DE TU FRONTEND EN VERCEL
+    'http://localhost:3000',
+    'https://ppp-team-rocket-m4tzst3p0-martin-peraltas-projects.vercel.app' // <-- CORREGIDO
 ];
 
 const corsOptions = {
     origin: function (origin, callback) {
-        // Permite peticiones sin origen (como las de Postman o apps móviles) y las de la whitelist
         if (whitelist.indexOf(origin) !== -1 || !origin) {
             callback(null, true);
         } else {
@@ -29,7 +27,6 @@ const corsOptions = {
     }
 };
 
-// Se aplican las nuevas opciones de CORS
 app.use(cors(corsOptions)); 
 
 // Middleware
@@ -44,7 +41,6 @@ app.use('/api/pokemon', pokemonRoutes);
 app.get('/', (req, res) => {
   res.send('API funcionando correctamente');
 });
-
 
 // Conexión a MongoDB Atlas
 const connectDB = async () => {
